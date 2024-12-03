@@ -2,6 +2,69 @@
 #include <stdio.h>
 #include <string.h>
 
+int state = 1;
+int get_word(FILE *fd);
+int check_state(FILE *fd);
+
+int check_dont(FILE *fd) {
+  char c;
+  int i = 3;
+  char *expected = "don't()";
+
+  while (fscanf(fd, "%c", &c) > 0 && i < 6) {
+    if (c != expected[i]) {
+      if (c != expected[i]) {
+        if (c == 'm') {
+          return get_word(fd);
+        } else if (c == 'd') {
+          return check_state(fd);
+        }
+        return 0;
+      }
+    }
+    i++;
+  }
+  state = 0;
+  return 0;
+}
+int check_state(FILE *fd) {
+  char c;
+  int i = 1;
+  char *expected = "do";
+
+  while (fscanf(fd, "%c", &c) > 0 && i < 2) {
+    // if not do return 0
+    if (c != expected[i]) {
+      if (c == 'm') {
+        return get_word(fd);
+      } else if (c == 'd') {
+        return check_state(fd);
+      }
+      return 0;
+    }
+    i++;
+  }
+  if (c == '(') {
+    fscanf(fd, "%c", &c);
+    if (c == ')') {
+      state = 1;
+      return 0;
+    } else if (c == 'm') {
+      return get_word(fd);
+    } else if (c == 'd') {
+      return check_state(fd);
+    }
+
+  } else if (c == 'n') {
+    return check_dont(fd);
+  } else if (c == 'm') {
+    return get_word(fd);
+  } else if (c == 'd') {
+    return check_state(fd);
+  }
+
+  return 0;
+}
 int get_word(FILE *fd) {
   int i = 1;
   char *expected = "mul(";
@@ -13,6 +76,12 @@ int get_word(FILE *fd) {
   while (fscanf(fd, "%c", &c) > 0 && i < 3) {
 
     if (c != expected[i]) {
+      if (c == 'm') {
+        return get_word(fd);
+      } else if (c == 'd') {
+        return check_state(fd);
+      }
+
       return 0;
     }
     i++;
@@ -25,6 +94,8 @@ int get_word(FILE *fd) {
       if (i == 0) {
         if (c == 'm') {
           return get_word(fd);
+        } else if (c == 'd') {
+          return check_state(fd);
         }
 
         // if i=0 means that no digit
@@ -54,6 +125,8 @@ int get_word(FILE *fd) {
       if (i == 0) {
         if (c == 'm') {
           return get_word(fd);
+        } else if (c == 'd') {
+          return check_state(fd);
         }
 
         // if i=0 means that no digit
@@ -71,13 +144,15 @@ int get_word(FILE *fd) {
   if (c != ')') {
     if (c == 'm') {
       return get_word(fd);
+    } else if (c == 'd') {
+      return check_state(fd);
     }
     return 0;
   }
 
-  printf("mul(%d,%d)\n", num1, num2);
+  //printf("mul(%d,%d)\n", num1, num2);
 
-  return num1 * num2;
+  return state == 1 ? num1 * num2 : 0;
 }
 
 void tokenize(FILE *fd) {
@@ -87,6 +162,8 @@ void tokenize(FILE *fd) {
   while (fscanf(fd, "%c", &c) > 0) {
     if (c == 'm') {
       sum += get_word(fd);
+    } else if (c == 'd') {
+      sum += check_state(fd);
     }
   }
   printf("%d\n", sum);
