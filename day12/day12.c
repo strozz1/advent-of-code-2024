@@ -4,26 +4,22 @@
 char *visited;
 int bsize = 0;
 
-int check_visited(char *visited, int size, char val) {
-  int i;
-  for (i = 0; i < size; i++) {
-    if (visited[i] == val)
-      return 1;
-  }
-  return 0;
+
+int check_visited(char *visited, int pos, char val) {
+  return visited[pos]==val;
 }
 void backtracking(char *map, int w, int h, int pos, int *area, int *perim) {
-  if (check_visited(visited, bsize, pos)) {
+  if (check_visited(visited, pos, map[pos])) {
     return;
   }
   (*area)++;
 
-  visited[bsize] = pos;
+  visited[pos] = map[pos];
   bsize++;
   int curr_w = pos % w, curr_h = pos / w;
   char current = map[pos];
   // left
-  if (curr_w <= 0 || (current != map[pos - 1])) {
+  if (curr_w <= 0 || (current != map[pos - 1])) {  
     (*perim)++;
   } else {
     backtracking(map, w, h, pos - 1, area, perim);
